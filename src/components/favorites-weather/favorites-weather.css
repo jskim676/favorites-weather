@@ -1,0 +1,47 @@
+.favorites-weather {
+    display:flex;
+    justify-content: center;
+}
+
+.favorites-weather-list {
+    width:800px;
+}
+
+.favorites-weather-item {
+    height:150px;
+    padding:10px;
+    display:flex;
+    align-items: center;
+    border:1px solid gray;
+    border-radius: 5px;
+}
+
+.favorites-weather-icon {
+    width:84px;
+    height:72px;
+}
+
+.favorites-empty-weather {
+    width:100%;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.weather-info {
+    width:100%;
+}
+
+.weather-info .section {
+    display:flex;
+    justify-content: space-between;
+}
+
+.weather-info .city-info {
+    font-size:24px;
+}
+
+.weather-info .temperature-info, .weather-info .time-info {
+    font-size:20px;
+}
