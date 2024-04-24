@@ -1,35 +1,60 @@
-import React, {useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './city-info.css';
-import { WEATHER_API_KEY, WEATHER_API_URL } from '../api';
+import { getWeatherData } from '../api';
 
-const CityInfo = () => {
+const CityInfo = ({ cityCoords }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const cityName = new URLSearchParams(location.search).get('cityName');
-    const latitude = new URLSearchParams(location.search).get('latitude');
-    const longitude = new URLSearchParams(location.search).get('longitude');
+    const [weatherData, setWeatherData] = useState(null);
+    const [favoritesCity, setFavoritesCity] = useState(false);
+
+    const latitude = cityCoords ? cityCoords.latitude : null;
+    const longitude = cityCoords ? cityCoords.longitude : null;
 
     const goToHome = () => {
         navigate('/');
     };
 
-    const currentWeatherFetch = fetch(
-        `${WEATHER_API_URL}/weather?lat=${latitude}&lon=${longitude}&appid=${WEATHER_API_KEY}&units=metric`
-    );
-    const forecastFetch = fetch(
-        `${WEATHER_API_URL}/forecast?lat=${latitude}&lon=${longitude}&appid=${WEATHER_API_KEY}&units=metric`
-    );
+    useEffect(() => {
+        const fetchWeatherData = async () => {
+            try {
+                const data = await getWeatherData(latitude, longitude);
+                setWeatherData(data);
+                localStorage.setItem('weatherData', JSON.stringify(data));
+            } catch (error) {
+                console.log(error);
+            }
+        };
+    
+        const storedWeatherData = JSON.parse(localStorage.getItem('weatherData'));
+        if (storedWeatherData) {
+            setWeatherData(storedWeatherData);
+        }
+    
+        const favoritesList = JSON.parse(localStorage.getItem('favoritesList')) || [];
+        setFavoritesCity(favoritesList.includes(cityName));
+    
+        if (cityCoords) {
+            fetchWeatherData();
+        }
+    }, [cityCoords, latitude, longitude, cityName]);
 
-    Promise.all([currentWeatherFetch, forecastFetch])
-        .then(async (response) => {
-        const weatherResponse = await response[0].json();
-        const forecastResponse = await response[1].json();
 
-        console.log(weatherResponse);
-        console.log(forecastResponse)
-        })
-        .catch((err) => console.log(err));
+    const toggleFavorites = () => {
+        const favoritesList = JSON.parse(localStorage.getItem('favoritesList')) || [];
+        const {coord: { lon: longitude, lat: latitude } } = weatherData.weather;
+        const cityData = { cityName, latitude, longitude };
+        if (favoritesCity) {
+            const updatedFavoritesCities = favoritesList.filter(city => city.cityName !== cityName);
+            localStorage.setItem('favoritesList', JSON.stringify(updatedFavoritesCities));
+        } else {
+            const updatedFavoritesCities = [...favoritesList, cityData];
+            localStorage.setItem('favoritesList', JSON.stringify(updatedFavoritesCities));
+        }
+        setFavoritesCity(!favoritesCity);
+    };
 
     return (
         <div className="city-info">
@@ -38,6 +63,9 @@ const CityInfo = () => {
                 <p>위도: {latitude}</p>
                 <p>경도: {longitude}</p>
             </div>
+            <button onClick={toggleFavorites}>
+                {favoritesCity ? '즐겨찾기 제거' : '즐겨찾기 추가'}
+            </button>
             <button onClick={goToHome}>홈</button>
         </div>
     );

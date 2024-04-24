@@ -1,9 +1,10 @@
+// SearchBar.js
 import React from 'react';
 import { AsyncPaginate } from 'react-select-async-paginate';
 import { GEO_API_URL, geoApiOptions } from './api';
 import { useNavigate } from 'react-router-dom';
 
-const SearchBar = () => {
+const SearchBar = ({ updateCityCoords }) => {
     const navigate = useNavigate();
 
     const handleOnChange = async (selectedOption) => {
@@ -13,7 +14,8 @@ const SearchBar = () => {
                 latitude: selectedOption.value.split(' ')[0],
                 longitude: selectedOption.value.split(' ')[1]
             };
-            navigate(`/cityinfo?cityName=${encodeURIComponent(cityName)}&latitude=${encodeURIComponent(cityCoords.latitude)}&longitude=${encodeURIComponent(cityCoords.longitude)}`);
+            updateCityCoords(cityCoords);
+            navigate(`/cityinfo?cityName=${encodeURIComponent(cityName)}`);
         }
     };
 
